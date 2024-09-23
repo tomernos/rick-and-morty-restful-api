@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app-deployment
+  namespace: backendapi
+spec:
+  replicas: 2  
+  selector:
+    matchLabels:
+      app: flask-app-selmat
+  template:
+    metadata:
+      labels:
+        app: flask-app-selmat
+    spec:
+      containers:
+      - name: flask-app-containers
+        image: tomernos/charactersapi:latest  
+        ports:
+        - containerPort: 5000
