@@ -1,0 +1,52 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Minikube
+      uses: medyagh/setup-minikube@master
+
+    - name: Set up Helm
+      uses: azure/setup-helm@v1
+      with:
+        version: 'v3.4.0'
+
+    - name: Deploy to Minikube
+      run: |
+        minikube status
+        kubectl get pods -A
+        
+        
+        # Deploy Helm chart
+        helm upgrade --install rick-and-morty-api ./rick-and-morty-api
+
+    - name: Wait for deployment
+      run: |
+        kubectl wait --for=condition=available --timeout=600s deployment/rick-and-morty-api
+
+    - name: Run integration tests
+      run: |
+        # Get NodePort
+        NODE_PORT=$(kubectl get -o jsonpath="{.spec.ports[0].nodePort}" services rick-and-morty-api)
+        
+        # Get Minikube IP
+        MINIKUBE_IP=$(minikube ip)
+        
+        # Test endpoints
+        curl -f http://$MINIKUBE_IP:$NODE_PORT/healthcheck || exit 1
+        curl -f http://$MINIKUBE_IP:$NODE_PORT/api/characters || exit 1
+        
+
+    - name: Clean up
+      if: always()
+      run: minikube delete
