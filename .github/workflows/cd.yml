@@ -44,7 +44,7 @@ jobs:
         
         # Test endpoints
         curl -f http://$MINIKUBE_IP:$NODE_PORT/healthcheck || exit 1
-        curl -f http://$MINIKUBE_IP:$NODE_PORT/api/characters || exit 1
+        curl -f http://$MINIKUBE_IP:$NODE_PORT//characters || exit 1
         
 
     - name: Clean up
