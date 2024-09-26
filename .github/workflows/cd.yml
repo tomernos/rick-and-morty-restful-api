@@ -24,6 +24,7 @@ jobs:
     - name: Deploy to Minikube
       run: |
         minikube status
+        sudo snap install kubectl --classic
         kubectl get pods -A
         
         
